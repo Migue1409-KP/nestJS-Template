@@ -1,14 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UUID } from 'crypto';
 import { z } from 'zod';
+import { gender_type } from '../entities/user-profiles.entity';
 
 export const CreateUserProfileSchema = z.object({
   authUserId: z.string().uuid(),
   name: z.string().min(2).max(100),
   lastname: z.string().min(2).max(100).nullable().optional(),
+  languageId: z.string().uuid().nullable().optional(),
   phone: z.string().nullable().optional(),
   birthDate: z.coerce.date().nullable().optional(),
-  genre: z.string().nullable().optional(),
+  gender: z.nativeEnum(gender_type).nullable().optional(),
 });
 
 export type CreateUserProfileDto = z.infer<typeof CreateUserProfileSchema>;
@@ -20,10 +21,12 @@ export class CreateUserProfileSwaggerDto {
   lastname?: string | null;
   @ApiProperty({ type: 'string', description: 'Authentication user ID' })
   authUserId: string;
+  @ApiProperty({ type: 'string', format: 'uuid', nullable: true })
+  languageId?: string;
   @ApiProperty({ type: 'string', nullable: true })
   phone?: string | null;
   @ApiProperty({ type: 'string', format: 'date', nullable: true })
   birthDate?: Date | null;
   @ApiProperty({ type: 'string', nullable: true })
-  genre?: string | null;
+  gender?: gender_type | null;
 }

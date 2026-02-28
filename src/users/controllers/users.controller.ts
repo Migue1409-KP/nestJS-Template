@@ -1,72 +1,228 @@
 // users.controller.ts
 import { Controller, Post, Body, UseGuards, HttpCode, Patch, Param, Get } from '@nestjs/common';
-import { AuthGuard, Session, UserSession } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, Session } from '@thallesp/nestjs-better-auth';
 import { UsersService } from '../services/users.service';
 import { ZodValidationPipe } from '@/shared/pipes/zod-validation.pipe';
 import { CreateUserProfileDto, CreateUserProfileSchema, CreateUserProfileSwaggerDto } from '../dto/create-user.dto';
 import { UpdateUserProfileDto, UpdatePartialUserProfileSchema, UpdatePartialUserProfileSwaggerDto } from '../dto/update-user.dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiSecurity, ApiParam } from '@nestjs/swagger';
 import { ApiSuccess } from '@/shared/interfaces/api-response';
+import { UserProfile } from '../entities/user-profiles.entity';
+import { ExtendedUserSession } from '@/shared/interfaces/extended-session';
 
 @Controller('users')
 @UseGuards(AuthGuard)
+@ApiSecurity('apiKeyAuth')
+@ApiSecurity('cookieAuth')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('profile')
   @HttpCode(201)
-  @ApiSecurity('cookieAuth')
-  @ApiOperation({ summary: 'Create user profile of authenticated user' })
-  @ApiResponse({ status: 201, description: 'User profile created successfully.' })
+  @ApiOperation({
+    summary: 'Create user profile',
+    description: 'Creates a user profile for the authenticated user. User must have a valid session. Can only create one profile per user.',
+  })
   @ApiBody({ type: CreateUserProfileSwaggerDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User profile created successfully',
+    schema: {
+      example: {
+        status: 'success',
+        data: {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          authUserId: 'clh1234567890abcdef',
+          email: 'user@example.com',
+          name: 'John',
+          lastname: 'Doe',
+          languageId: '550e8400-e29b-41d4-a716-446655440000',
+          phone: '+1234567890',
+          birthDate: '1990-01-15',
+          gender: 'M',
+          createdAt: '2025-11-23T10:30:00Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request body or validation error',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - missing or invalid session cookie',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'User profile already exists for this user',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async createProfile(
-    @Session() session: UserSession,
-    @Body(new ZodValidationPipe(CreateUserProfileSchema)) body: CreateUserProfileDto,
+    @Session() session: ExtendedUserSession,
+    @Body(new ZodValidationPipe(CreateUserProfileSchema)) body: CreateUserProfileDto
   ): Promise<ApiSuccess<CreateUserProfileDto>> {
     const authUserId = session.user.id;
     return {
       status: "success",
-      data: await this.usersService.createProfile({ authUserId: authUserId, ...body }),
+      data: await this.usersService.createProfile(
+        { authUserId, email: session.user.email, ...body },
+        true
+      ),
     };
   }
 
   @Patch('profile/:id')
-  @ApiSecurity('cookieAuth')
-  @ApiOperation({ summary: 'Update user profile by ID' })
-  @ApiResponse({ status: 200, description: 'User profile updated successfully.' })
-  @ApiResponse({ status: 404, description: 'User profile not found.' })
+  @ApiOperation({
+    summary: 'Update user profile',
+    description: 'Partially updates an existing user profile. Can update any combination of fields. All fields are optional.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the user profile to update',
+    format: 'uuid',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   @ApiBody({ type: UpdatePartialUserProfileSwaggerDto })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile updated successfully',
+    schema: {
+      example: {
+        status: 'success',
+        data: {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          name: 'Jane',
+          lastname: 'Smith',
+          phone: '+9876543210',
+          updatedAt: '2025-11-23T10:45:00Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid request body or parameters',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - missing or invalid session cookie',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User profile not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async updateProfile(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(UpdatePartialUserProfileSchema)) body: UpdateUserProfileDto,
-  ): Promise<ApiSuccess<any>> {
+    @Body(new ZodValidationPipe(UpdatePartialUserProfileSchema)) body: UpdateUserProfileDto
+  ): Promise<ApiSuccess<UserProfile>> {
     return {
       status: "success",
-      data: await this.usersService.updateProfile(id as any, body),
+      data: await this.usersService.updateProfile(id, body),
+    };
+  }
+
+  @Get('profile/me')
+  @ApiOperation({
+    summary: 'Get current user profile',
+    description: 'Retrieves the profile of the authenticated user based on their session. Returns null if user has not created a profile yet.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+    schema: {
+      example: {
+        status: 'success',
+        data: {
+          userProfile: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            authUserId: 'clh1234567890abcdef',
+            email: 'user@example.com',
+            name: 'John',
+            lastname: 'Doe',
+            languageId: '550e8400-e29b-41d4-a716-446655440000',
+            phone: '+1234567890',
+            birthDate: '1990-01-15',
+            gender: 'M',
+            createdAt: '2025-11-23T10:30:00Z',
+            updatedAt: '2025-11-23T10:30:00Z',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - missing or invalid session cookie',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async getProfile(@Session() session: ExtendedUserSession): Promise<ApiSuccess<{ userProfile: UserProfile | null }>> {
+    const userProfile = await this.usersService.findByAuthUserId(session.user.id);
+    return {
+      status: "success",
+      data: { userProfile },
     };
   }
 
   @Get('profile/:id')
-  @ApiSecurity('cookieAuth')
-  @ApiOperation({ summary: 'Get user profile by ID' })
-  @ApiResponse({ status: 200, description: 'User profile retrieved successfully.' })
-  @ApiResponse({ status: 404, description: 'User profile not found.' })
+  @ApiOperation({
+    summary: 'Get user profile by ID',
+    description: 'Retrieves a specific user profile by its UUID. Returns all profile information including personal data and preferences.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID of the user profile to retrieve',
+    format: 'uuid',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+    schema: {
+      example: {
+        status: 'success',
+        data: {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          authUserId: 'clh1234567890abcdef',
+          email: 'user@example.com',
+          name: 'John',
+          lastname: 'Doe',
+          languageId: '550e8400-e29b-41d4-a716-446655440000',
+          phone: '+1234567890',
+          birthDate: '1990-01-15',
+          gender: 'M',
+          createdAt: '2025-11-23T10:30:00Z',
+          updatedAt: '2025-11-23T10:30:00Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - missing or invalid session cookie',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User profile not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async getProfileById(@Param('id') id: string): Promise<ApiSuccess<any>> {
     return {
       status: "success",
-      data: await this.usersService.findProfileById(id as any),
-    };
-  }
-
-  @Get('profile-exists')
-  @ApiSecurity('cookieAuth')
-  @ApiOperation({ summary: 'Check if authenticated user has a profile' })
-  @ApiResponse({ status: 200, description: 'Profile existence checked.' })
-  async checkProfileExists(@Session() session: UserSession): Promise<ApiSuccess<{ hasProfile: boolean }>> {
-    const hasProfile = await this.usersService.checkProfileExists(session.user.id);
-    return {
-      status: "success",
-      data: { hasProfile },
+      data: await this.usersService.findProfileById(id),
     };
   }
 }

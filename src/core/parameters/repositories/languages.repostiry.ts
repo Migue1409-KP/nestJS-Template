@@ -1,43 +1,46 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository, QueryRunner } from 'typeorm';
 import { Language } from '../entities/languages.entity';
 
 @Injectable()
-export class LanguagesRepository {
-    constructor(
-        @InjectRepository(Language)
-        private readonly languageRepository: Repository<Language>,
-    ) {}
-
-    async findAll(): Promise<Language[]> {
-        return this.languageRepository.find();
+export class LanguagesRepository extends Repository<Language> {
+    constructor(private dataSource: DataSource) {
+        super(Language, dataSource.createEntityManager());
     }
 
-    async findOneById(id: string): Promise<Language | null> {
-        return this.languageRepository.findOne({ where: { id } });
+    private getRepository(queryRunner?: QueryRunner): Repository<Language> {
+        return queryRunner ? queryRunner.manager.getRepository(Language) : this;
     }
 
-    async findOneByCode(code: string): Promise<Language | null> {
-        return this.languageRepository.findOne({ where: { code } });
+    async findAll(queryRunner?: QueryRunner): Promise<Language[]> {
+        return this.getRepository(queryRunner).find();
     }
 
-    async findOneByName(name: string): Promise<Language | null> {
-        return this.languageRepository.findOne({ where: { name } });
+    async findOneById(id: string, queryRunner?: QueryRunner): Promise<Language | null> {
+        return this.getRepository(queryRunner).findOne({ where: { id } });
     }
 
-    async create(data: Partial<Language>): Promise<Language> {
-        const language = this.languageRepository.create(data);
-        return this.languageRepository.save(language);
+    async findOneByCode(code: string, queryRunner?: QueryRunner): Promise<Language | null> {
+        return this.getRepository(queryRunner).findOne({ where: { code } });
     }
 
-    async update(id: string, data: Partial<Language>): Promise<Language | null> {
-        await this.languageRepository.update(id, data);
-        return this.findOneById(id);
+    async findOneByName(name: string, queryRunner?: QueryRunner): Promise<Language | null> {
+        return this.getRepository(queryRunner).findOne({ where: { name } });
     }
 
-    async delete(id: string): Promise<boolean> {
-        const result = await this.languageRepository.delete(id);
+    async createEntity(data: Partial<Language>, queryRunner?: QueryRunner): Promise<Language> {
+        const repo = this.getRepository(queryRunner);
+        const language = repo.create(data);
+        return repo.save(language);
+    }
+
+    async updateEntity(id: string, data: Partial<Language>, queryRunner?: QueryRunner): Promise<Language | null> {
+        await this.getRepository(queryRunner).update(id, data);
+        return this.findOneById(id, queryRunner);
+    }
+
+    async deleteEntity(id: string, queryRunner?: QueryRunner): Promise<boolean> {
+        const result = await this.getRepository(queryRunner).delete(id);
         return result.affected > 0;
     }
 }

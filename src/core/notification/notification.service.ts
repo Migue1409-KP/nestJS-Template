@@ -20,6 +20,7 @@ export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
   private readonly ses: SESClient;
   private readonly sender: string;
+  private readonly defaultParams: Record<string, string>;
 
   constructor(
     private readonly configService: ConfigService,
@@ -37,6 +38,27 @@ export class NotificationService {
     });
 
     this.sender = this.configService.get<string>("AWS_SES_SENDER")!;
+
+    // Parámetros por defecto para templates (pueden ser sobrescritos por params específicos)
+    this.defaultParams = {
+      emailSupportNotification: "",
+    };
+  }
+
+  async onModuleInit() {
+    await this.initializeDefaultParams();
+  }
+
+  private async initializeDefaultParams() {
+    try {
+      // Cargar parámetros por defecto desde la base de datos o configuración
+      // const emailSupport = await this.businessParametersRepository.getValueByKey<{ email: string }>('email_support_notification');
+      // if (emailSupport?.email) {
+      //   this.defaultParams.emailSupportNotification = emailSupport.email;
+      // }
+    } catch (error) {
+      this.logger.warn('Failed to load email support notification parameter', error);
+    }
   }
 
   // ----------------------------------------------------------------
@@ -45,23 +67,32 @@ export class NotificationService {
   async buildAndSendNotification(data: BuildNotificationInput) {
     const { email, phone, subject, templateCode, params } = data;
 
+    const mergedParams = { ...this.defaultParams, ...params }; 
+
     // consultar template
-    const template =
+    let template =
       await this.notificationTemplateTranslationsRepository.findByTemplateCodeAndLanguageCode(
         templateCode,
         data.languageCode || "en"
       );
     if (!template) {
-      throw new NotFoundException(
-        `Template not found for code: ${templateCode}`
+      template = await this.notificationTemplateTranslationsRepository.findByTemplateCodeAndLanguageCode(
+        templateCode,
+        "en"
       );
+
+      if (!template){
+        throw new NotFoundException({
+          message: `Template not found for code: ${templateCode}`
+        });
+      }
     }
 
     // Reemplazar placeholders dinámicos
     const render = (templateStr: string | null): string | null => {
       if (!templateStr) return null;
       let result = templateStr;
-      Object.entries(params).forEach(([key, value]) => {
+      Object.entries(mergedParams).forEach(([key, value]) => {
         result = result.replace(new RegExp(`{{${key}}}`, "g"), value);
       });
       return result;
@@ -72,13 +103,13 @@ export class NotificationService {
     const finalSubject = subject ?? render(template.subject) ?? "Notification";
 
     // Registrar la notificación en la base de datos
-    const notificationRecord = await this.notificationsRepository.create({
+    const notificationRecord = await this.notificationsRepository.createEntity({
       template: template.template,
       email: email,
       phone: phone,
       bodyHtml: html,
       bodyText: sms,
-      params,
+      params: mergedParams,
       status: NotificationStatus.PENDING,
     });
 
@@ -99,15 +130,25 @@ export class NotificationService {
       );
 
       if (status === NotificationStatus.FAILED) {
-        throw new Error(`Failed to send email to ${email}`);
+        throw new InternalServerErrorException({
+          message: `Failed to send email to ${email}`,
+        });
       }
     }
 
     // Enviar SMS si corresponde (por ahora deshabilitado)
     if (phone && sms) {
-      // TODO: Integrar servicio SMS (Twilio, AWS SNS, etc.)
-      // await this.sendSms(phone, sms);
-      this.logger.warn(`📱 SMS sending not implemented yet for ${phone}`);
+      const status = await this.sendSms(phone, sms)
+        .then(() => NotificationStatus.SENT)
+        .catch(() => NotificationStatus.FAILED);
+
+      await this.notificationsRepository.updateStatus(notificationRecord.id, status);
+
+      if (status === NotificationStatus.FAILED) {
+        throw new InternalServerErrorException({
+          message: `Failed to send SMS to ${phone}`,
+        });
+      }
     }
 
     return { success: true };
@@ -171,12 +212,4 @@ export class NotificationService {
         throw new Error(`Unexpected error: Status ${status}`);
     }
   }
-
-  // ----------------------------------------------------------------
-  //  Placeholder de envío de SMS (futuro)
-  // ----------------------------------------------------------------
-  // private async sendSms(phone: string, message: string) {
-  //   // Integrar Twilio o AWS SNS aquí
-  //   this.logger.log(`Sending SMS to ${phone}: ${message}`);
-  // }
 }
