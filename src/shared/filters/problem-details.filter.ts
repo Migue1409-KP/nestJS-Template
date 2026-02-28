@@ -4,12 +4,15 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ApiError, ProblemDetails } from '@/shared/interfaces/api-response';
 
 @Catch()
 export class ProblemDetailsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ProblemDetailsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -27,6 +30,9 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         status,
         detail: typeof r === 'string' ? r : (r as any).message,
         instance: request.url,
+        ...(typeof r !== 'string' && ((r as any).data?.length > 0 || (r as any).errors?.length > 0) && {
+          errors: (r as any).data || (r as any).errors
+        })
       };
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -37,6 +43,18 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         detail: (exception as any)?.message || 'Unexpected error',
         instance: request.url,
       };
+    }
+
+    // Log del error (funcionalidad traída de AllExceptionsFilter)
+    if (status >= 500) {
+      this.logger.error(
+        `${request.method} ${request.url}`,
+        exception instanceof Error ? exception.stack : 'Unknown error',
+      );
+    } else {
+      this.logger.warn(
+        `${request.method} ${request.url} - ${status} - ${problem.detail}`,
+      );
     }
 
     const errorResponse: ApiError = {

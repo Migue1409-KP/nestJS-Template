@@ -38,11 +38,18 @@ async function bootstrap() {
     new RolesGuard(reflector)
   );
 
+  const reflector = app.get(Reflector);
+
+  app.useGlobalGuards(
+    new ApiKeyGuard(configService, reflector),
+    new RolesGuard(reflector)
+  );
+
   // Global pipes
   app.useGlobalPipes(new ZodValidationPipe());
 
   // Global filters
-  app.useGlobalFilters(new AllExceptionsFilter(), new ProblemDetailsFilter());
+  app.useGlobalFilters(new ProblemDetailsFilter());
 
   // CORS
   const frontendUrl = configService.get<string>("FRONTEND_URL") || "";
@@ -62,17 +69,26 @@ async function bootstrap() {
 
   // Swagger config
   const config = new DocumentBuilder()
-    .setTitle("NestJS Modular API")
-    .setDescription("API Docs (BetterAuth + TypeORM + Zod)")
+    .setTitle("MyLasts API")
+    .setDescription("API documentation for MyLasts application")
     .setVersion("1.0")
-    .addApiKey(
+    .addCookieAuth(
+      "better-auth.session_token", // nombre de la cookie
       {
         type: "apiKey",
         in: "cookie",
-        name: "better-auth.session_token",
         description: "BetterAuth session cookie",
       },
-      "cookieAuth" // este es el nombre que usarás en @ApiSecurity()
+      "cookieAuth" // nombre del esquema de seguridad
+    )
+    .addApiKey(
+      {
+        type: "apiKey",
+        in: "header",
+        name: "api-key",
+        description: "API Key for authentication",
+      },
+      "apiKeyAuth" // nombre del esquema de seguridad
     )
     .build();
 
