@@ -101,7 +101,10 @@ npm run migration:generate --name=DescripcionDelCambio
 # 4. Aplicar migraciones de TypeORM
 npm run migration:run
 
-# 5. Arrancar la aplicación
+# 5. Aplicar seeders si los hay
+npm run seed
+
+# 6. Arrancar la aplicación
 npm run start:dev
 ```
 
