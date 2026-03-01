@@ -4,7 +4,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import { AppModule } from "./app.module";
 import { LoggingInterceptor } from "@/shared/interceptors/logging.interceptor";
 import { ZodValidationPipe } from "@/shared/pipes/zod-validation.pipe";
-import { AllExceptionsFilter } from "@/shared/filters/all-exceptions.filter";
 import { ResponseInterceptor } from "./shared/interceptors/response.interceptor";
 import { ProblemDetailsFilter } from "./shared/filters/problem-details.filter";
 import { RequestIdInterceptor } from "./shared/interceptors/request-id.interceptor";
@@ -38,13 +37,6 @@ async function bootstrap() {
     new RolesGuard(reflector)
   );
 
-  const reflector = app.get(Reflector);
-
-  app.useGlobalGuards(
-    new ApiKeyGuard(configService, reflector),
-    new RolesGuard(reflector)
-  );
-
   // Global pipes
   app.useGlobalPipes(new ZodValidationPipe());
 
@@ -69,8 +61,8 @@ async function bootstrap() {
 
   // Swagger config
   const config = new DocumentBuilder()
-    .setTitle("MyLasts API")
-    .setDescription("API documentation for MyLasts application")
+    .setTitle("NestJS Modular Monolith API")
+    .setDescription("API documentation — generated automatically from OpenAPI decorators")
     .setVersion("1.0")
     .addCookieAuth(
       "better-auth.session_token", // nombre de la cookie

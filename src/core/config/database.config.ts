@@ -12,7 +12,7 @@ export const getDatabaseConfig = (
   database: configService.get<string>('DB_NAME', 'nestjs_template'),
   entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
   migrations: ['dist/core/database/migrations/*.js'],
-  synchronize: configService.get<string>('NODE_ENV') === 'development',
-  logging: configService.get<string>('NODE_ENV') === 'development',
+  synchronize: configService.get<string>('NODE_ENV') !== 'production',
+  logging: configService.get<string>('NODE_ENV') == 'development',
   migrationsRun: true,
 });
