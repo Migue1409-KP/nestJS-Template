@@ -1,53 +1,114 @@
-# agent.md
+# AGENTS.md
+
+You are an AI coding agent working on a NestJS modular monolith backend.
+Optimize for **correctness**, **consistency with existing patterns**, and **small, well-tested changes**.
 
 ## Project Overview
 
-This backend is a **NestJS modular monolith base template**, designed for scaffolding new SaaS, enterprise, or freelancing projects quickly.  
-It implements **BetterAuth** with cookie-based sessions (reducing the boilerplate of implementing passports/JWTs), structured and traceable logging with **Winston**, robust validations with **Zod**, and standard **TypeORM** for PostgreSQL. It includes a ready-to-use mailer wrapper via **AWS SES**.
+- This repository is a NestJS modular monolith template for SaaS / enterprise backends.
+- Tech stack: NestJS (TypeScript), Express, TypeORM (PostgreSQL), BetterAuth, Zod, Winston, AWS SES, Swagger.
+- Always prefer following existing patterns over introducing new abstractions.
 
-## Technologies
+For more detailed domain docs, you MAY open files under `agent_docs/` (start with `agent_docs/README.md`).
 
-- **NestJS** (TypeScript)
-- **ExpressJS** (HTTP server)
-- **TypeORM** (PostgreSQL, automatic migrations)
-- **BetterAuth** (Sessions, email/password, easily extensible to OAuth)
-- **Zod** (API Validation)
-- **Winston** (Logging with requestId injection)
-- **AWS SES integration** (Mailing service abstraction)
-- **Swagger** (OpenAPI documentation)
+## Architecture & Folder Structure
 
-## Folder Structure
+- We use a **feature-first / modular monolith** structure:
+  - `src/core`: cross-cutting infrastructure (config, DB, mailer, parameters, notifications).
+  - `src/shared`: interceptors, pipes (Zod), filters (ProblemDetails RFC9457), decorators, interfaces.
+  - `src/auth`: BetterAuth integration and auth controllers.
+  - `src/users`: example feature module with entity, repository, service, controller and DTOs.
 
-- `src/`
-  - `app.module.ts`, `main.ts`: app bootstrap, Swagger setup, global pipes/interceptors.
-  - `core/`: application-wide config, DB connections, mail, HTTP wrap. Contains domains like `notification` or `parameters`.
-  - `shared/`: cross-cutting logic: interceptors (`RequestId`, `Logging`, `Response`), pipes (Zod), filters (`ProblemDetails`), decorators, interfaces.
-  - `auth/`: config for `@better-auth/cli`, standard auth controller + module.
-  - `users/`: `UserProfile` custom logic and entities that interact with BetterAuth's mapped tables.
+When adding new functionality, mirror the patterns from the `users` module
+(see `agent_docs/USERS_MODULE_GUIDE.md` for a detailed walkthrough).
 
-## Best Practices
+## How to implement a new feature
 
-- Use **feature-first / Modular Monolith** patterns: isolate your domains into separate folders containing their controllers, services, repositories, and entities.
-- Validate incoming requests with **Zod** + custom pipes, keeping endpoints secure.
-- Use **BetterAuth** commands for managing user schemas, while using TypeORM migrations for business logic tables.
-- Standardized API responses across the app handled via `ResponseInterceptor` and `ProblemDetails` exception filters (RFC 9457).
-- Structured logging: always leverage the injected `requestId` for troubleshooting flows in production.
+When the user asks to implement a new feature (e.g. "add projects module"):
 
-## AI Tasks Guidance
+1. **Plan first**
+   - Locate or create a dedicated folder under `src/<feature-name>/`.
+   - Identify required entity(ies), repository, service, controller and DTOs.
+   - Check `USERS_MODULE_GUIDE.md` for the canonical pattern.
 
-- **New resources:** generate a new module at the root of `src/` (or wherever domain contexts apply) using nest generators or manually providing `controller`, `service`, `module`, and `entity` structure.
-- **Relational DB / TypeORM:** Place entities logically separated. Remember to include them in the `DataSource` config / feature modules.
-- **Authentication:** Use existing implementations in `auth/` or interact directly with the `BetterAuth` client instances. If extending the User model, keep it synced between BetterAuth and `users` module.
-- **Transactions:** leverage TypeORM's `QueryRunner` or transactional decorators when performing critical multi-table writes.
+2. **Data layer (Entity + Repository)**
+   - Define a TypeORM `@Entity` in `entities/`.
+   - Implement a custom `Repository` class that extends `Repository<Entity>` and provides:
+     - `findAll`, `findOneById`, `createEntity`, `updateEntity`, `deleteEntity` (or soft delete) methods.
+   - Ensure entities are registered in the module and in the TypeORM data source if needed.
 
-## Scripts & Automation
+3. **Service layer**
+   - Implement a `@Injectable()` service that uses the repository.
+   - Keep business logic here, not in controllers.
+   - Use transactions via `@Transactional()` or `QueryRunner` for multi-table writes.
 
-- `npm run migration:run` -> Apply TypeORM migrations.
-- `npm run auth:migrate` -> Apply BetterAuth schema changes.
-- `npm run start:dev` -> Start server in watch mode.
+4. **Controller + DTOs**
+   - Create a controller under `controllers/` that:
+     - Uses `ZodValidationPipe` for request validation with Zod schemas.
+     - Uses DTO types inferred from Zod schemas.
+     - Documents routes with `@nestjs/swagger` decorators and example responses.
+   - Follow the response format: `ApiSuccess<T>` and ProblemDetails for errors.
 
-## Output Style
+5. **Tests**
+   - Always create or update unit tests for services and any complex repository logic.
+   - Use Jest, mocks for repositories, and focus on business behavior.
+   - Look at `users` service tests as the main reference.
 
-- **English** for AI Context / Commit messages / internal comments.
-- **Spanish** for User-facing documentation (`/doc`, `README.md`).
-- Always follow TypeScript strict mode + NestJS conventions (dependency injection, SOLID rules).
+## Transactions & Database
+
+- Use TypeORM `QueryRunner` or transactional decorators for operations that touch multiple tables.
+- Prefer repository methods that accept an optional `queryRunner` to participate in existing transactions.
+- Never silently swallow errors; let Nest's exception filters handle them or throw explicit HTTP exceptions.
+
+## Authentication & Authorization
+
+- Use existing BetterAuth integration in `src/auth` for authentication concerns.
+- When extending the User model or profile:
+  - Keep BetterAuth user tables and `users` module entities in sync.
+  - Do not modify auth flows unless explicitly requested.
+
+## Logging & Error Handling
+
+- Use Winston with injected `requestId` for all logs.
+- Rely on `ResponseInterceptor` and ProblemDetails filters from `src/shared` for consistent error responses.
+- Do not introduce new logging frameworks.
+
+## Commands & Tooling
+
+Preferred commands the agent should use:
+
+- `npm run start:dev` – start dev server in watch mode.
+- `npm run migration:run` – apply TypeORM migrations.
+- `npm run auth:migrate` – apply BetterAuth schema changes.
+- `npm test` – run unit tests.
+- `npm run lint` – run linters (if configured).
+
+Before suggesting code changes, try to reason about **which commands should be run** to validate the work.
+
+## Output & Language Conventions
+
+- Use **English** for:
+  - Commit messages.
+  - Internal comments in code.
+  - AI-facing descriptions and prompts.
+- Use **Spanish** for:
+  - User-facing documentation (`/doc`, `README.md`).
+
+When generating documentation, respect this language split.
+
+## Guardrails (Always / Ask / Never)
+
+- **Always:**
+  - Follow existing patterns from the `users` module.
+  - Add or update tests when changing business logic.
+  - Keep TypeScript strict mode and NestJS DI conventions.
+
+- **Ask first:**
+  - When introducing new dependencies.
+  - When altering auth flows or security-related logic.
+  - When performing large refactors across modules.
+
+- **Never:**
+  - Disable validations, authentication or authorization checks to "make it work".
+  - Introduce `any` types or weaken typing without explicit justification.
+  - Commit example secrets or credentials in code.

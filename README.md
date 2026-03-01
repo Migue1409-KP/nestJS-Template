@@ -119,6 +119,7 @@ Revisa la carpeta `/doc` para entender cómo trabajar con este template:
 - [03 - Autenticación (BetterAuth)](./doc/03-authentication.md)
 - [04 - Base de Datos y Migraciones](./doc/04-database-and-migrations.md)
 - [05 - Añadir Nuevas Funcionalidades](./doc/05-adding-new-features.md)
+- [06 - Git y Commits Semánticos](./doc/06-git-conventional-commits.md)
 
 ---
 
