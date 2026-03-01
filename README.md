@@ -1,157 +1,145 @@
-# 📜 MyLasts API
+# NestJS Modular Monolith Template
 
-Backend oficial de **MyLasts — Plataforma de Legado Digital**.  
-Construido sobre **NestJS Modular Monolith Template** con autenticación **BetterAuth** y soporte para integraciones externas.
-
----
-
-## 🚀 Características
-
-- **NestJS + TypeScript**: Framework moderno con tipado fuerte.
-- **Arquitectura modular** (*feature-first*): cada dominio encapsulado en su propio módulo.
-- **Autenticación y sesiones**:
-  - **BetterAuth** con cookies (`better-auth.session_token`)
-  - Registro/Login con **Email & Password**
-  - **Google OAuth** integrado
-  - Soporte para MFA (TOTP, SMS, Email)
-- **ORM y Base de Datos**:
-  - **TypeORM** (PostgreSQL) con migraciones
-  - **Kysely + BetterAuth** para persistencia de sesiones
-- **Validación y logging**:
-  - **Zod** para DTOs
-  - **Winston** con `requestId` y trazabilidad
-- **Interoperabilidad**:
-  - Mail Module (AWS SES, Resend)
-  - HTTP Client Module
-- **APIs documentadas** con Swagger/OpenAPI
+Template base para proyectos en **NestJS**, diseñado para escalar como un **Modular Monolith**. Ofrece una base estructurada y lista para producción con autenticación moderna, base de datos relacional, validación, trazabilidad y notificaciones por email.
 
 ---
 
-## 📁 Estructura del Proyecto
+## Stack Tecnológico
 
-```bash
+| Herramienta | Rol |
+|---|---|
+| **NestJS + ExpressJS + TypeScript** | Framework principal, estructura feature-first |
+| **PostgreSQL + TypeORM** | Base de datos relacional con migraciones |
+| **BetterAuth** | Autenticación: sesiones en cookie, Email/Password, OAuth, MFA |
+| **Zod** | Validación de DTOs mediante pipes personalizados |
+| **Winston** | Logging estructurado con `requestId` por petición |
+| **Swagger (OpenAPI)** | Documentación automática de la API en `/api/v1/docs` |
+| **AWS SES** | Envío de emails a través del módulo de notificaciones |
+| **RFC 9457 (Problem Details)** | Formato estándar de errores en toda la API |
+| **Docker** | Entorno de desarrollo local integrado |
+
+---
+
+## Estructura del Proyecto
+
+```text
 src/
-├── app.module.ts        # Módulo raíz
-├── main.ts              # Bootstrap de la app
-├── core/                # Configuración global
-│   ├── config/          # DB, Winston, etc.
-│   ├── database/        # TypeORM + migraciones
-│   ├── mail/            # Abstracción de correo
-│   └── http/            # Cliente HTTP
-├── shared/              # Reutilizables
-│   ├── interceptors/    # RequestId, Logging, Response
-│   ├── pipes/           # Validación con Zod
-│   ├── filters/         # Filtros de excepciones
-│   └── interfaces/      # Interfaces comunes
-├── auth/                # Módulo de autenticación (BetterAuth)
-├── users/               # Entidad UserProfile + lógica
-└── integrations/        # Proveedores externos
-````
-
----
-
-## 🛠️ Configuración
-
-1. **Instalar dependencias**
-
-   ```bash
-   npm install
-   ```
-
-2. **Configurar variables de entorno**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edita `.env` con tus configuraciones:
-
-   * PostgreSQL
-   * Secrets BetterAuth
-   * Configuración OAuth (Google)
-   * Configuración correo
-
-3. **Levantar base de datos**
-
-   ```bash
-   docker-compose up -d postgres
-   ```
-
-4. **Ejecutar migraciones**
-
-   ```bash
-   npm run migration:run
-   npm run auth:migrate
-   ```
-
-5. **Iniciar aplicación**
-
-   ```bash
-   # Desarrollo
-   npm run start:dev
-
-   # Producción
-   npm run build
-   npm run start:prod
-   ```
-
----
-
-## 🔌 Endpoints principales (Draft)
-
-### Autenticación
-
-* `POST /api/auth/sign-up/email` — Registro de usuario
-* `POST /api/auth/sign-in/email` — Login con email y contraseña
-* `GET /api/auth/me` — Perfil del usuario autenticado
-
-### Planes y suscripciones
-
-* `GET /api/plans`
-* `POST /api/subscriptions`
-* `POST /api/subscriptions/apply-coupon`
-
-### Gestión de grantees
-
-* `POST /api/grantees`
-* `PUT /api/grantees/{id}`
-* `POST /api/grantees/{id}/resend`
-
-### Gestión de archivos
-
-* `POST /api/assets`
-* `POST /api/assets/{id}/assign`
-* `POST /api/assets/markdown`
-
-### Cartas de instrucciones
-
-* `POST /api/letters`
-* `PUT /api/letters/{id}`
-* `POST /api/letters/{id}/activate`
-
----
-
-## 🧪 Testing
-
-* **Unit tests**: `*.spec.ts`
-* **Integration tests**: `*.e2e-spec.ts`
-* **Coverage**: configurado con Jest
-
-```bash
-npm run test
-npm run test:e2e
-npm run test:cov
+ app.module.ts        # Módulo raíz
+ main.ts              # Bootstrap, Swagger, Guards, Pipes e Interceptores globales
+ auth/                # Autenticación con BetterAuth + endpoints custom
+ core/                # Infraestructura: DB, Logger, HTTP Client, Notificaciones, Parámetros
+ shared/              # Código transversal: decoradores, filtros, guards, interceptores, pipes
+ users/               # Dominio de usuarios: perfiles, repositorios, servicios
+doc/                     # Documentación detallada del template
 ```
 
 ---
 
-## 📖 Documentación
+## Configuración y Puesta en Marcha
 
-* **Swagger UI** disponible en: [http://localhost:3000/docs](http://localhost:3000/docs)
-* **API Response Standard**: basado en **RFC 9457** para errores
+### 1. Instalar dependencias
+
+```bash
+npm install
+```
+
+### 2. Variables de entorno
+
+```bash
+cp .env.example .env
+```
+
+Variables mínimas a configurar:
+
+```env
+# App
+PORT=3000
+API_PREFIX=api/v1
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3001
+
+# Base de Datos
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=secret
+DB_DATABASE=nestjs_template
+DB_SYNCHRONIZE=false
+
+# BetterAuth
+BETTER_AUTH_SECRET=your-secret-here
+BETTER_AUTH_URL=http://localhost:3000/api/v1
+
+# AWS SES (opcional)
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+```
+
+### 3. Levantar la base de datos (Docker)
+
+```bash
+docker-compose up -d postgres
+```
 
 ---
 
-## 📄 Licencia
+## Flujo para tener la BD al día
 
-MIT License — ver [LICENSE](LICENSE).
+Cada vez que haya cambios en el schema, seguir este orden:
+
+```bash
+# 1. Sincronizar el schema de BetterAuth (genera SQL interno)
+npm run auth:generate
+
+# 2. Aplicar tablas de BetterAuth (user, session, account, verification)
+npm run auth:migrate
+
+# 3. (Solo si hay cambios en entidades TypeORM) Generar migración
+npm run migration:generate --name=DescripcionDelCambio
+
+# 4. Aplicar migraciones de TypeORM
+npm run migration:run
+
+# 5. Arrancar la aplicación
+npm run start:dev
+```
+
+---
+
+## Documentación Interna
+
+Revisa la carpeta `/doc` para entender cómo trabajar con este template:
+
+- [01 - Getting Started](./doc/01-getting-started.md)
+- [02 - Arquitectura y Estructura](./doc/02-architecture-and-structure.md)
+- [03 - Autenticación (BetterAuth)](./doc/03-authentication.md)
+- [04 - Base de Datos y Migraciones](./doc/04-database-and-migrations.md)
+- [05 - Añadir Nuevas Funcionalidades](./doc/05-adding-new-features.md)
+
+---
+
+## Testing
+
+```bash
+npm run test          # Tests unitarios
+npm run test:watch    # Tests en modo watch
+npm run test:e2e      # End to End
+npm run test:cov      # Cobertura
+```
+
+---
+
+## Swagger
+
+Con la aplicación levantada, la documentación interactiva está en:
+
+```
+http://localhost:3000/api/v1/docs
+```
+
+---
+
+## Licencia
+
+MIT
