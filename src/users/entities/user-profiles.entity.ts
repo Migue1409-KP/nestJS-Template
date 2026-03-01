@@ -1,10 +1,18 @@
 import { Language } from '@/core/parameters/entities/languages.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
 
 export enum gender_type {
   MALE = 'Male',
   FEMALE = 'Female',
-  OTHER = 'Other'
+  OTHER = 'Other',
 }
 
 @Entity('user_profiles')

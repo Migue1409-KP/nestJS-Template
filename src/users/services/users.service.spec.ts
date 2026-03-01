@@ -96,9 +96,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException when profile does not exist', async () => {
       mockUserRepository.findOneById.mockResolvedValue(null);
 
-      await expect(
-        service.updateProfile('non-existent-id', { name: 'New Name' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updateProfile('non-existent-id', { name: 'New Name' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should update and return the updated profile', async () => {

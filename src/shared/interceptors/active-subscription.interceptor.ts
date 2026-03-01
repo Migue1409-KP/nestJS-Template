@@ -47,7 +47,10 @@ export class ActiveSubscriptionInterceptor implements NestInterceptor {
     }
 
     // Verificar que la suscripción esté activa
-    if (session.subscription.status !== 'active' && session.subscription.status !== 'pending_cancel') {
+    if (
+      session.subscription.status !== 'active' &&
+      session.subscription.status !== 'pending_cancel'
+    ) {
       throw new ForbiddenException({
         message: 'Active subscription required',
         data: [

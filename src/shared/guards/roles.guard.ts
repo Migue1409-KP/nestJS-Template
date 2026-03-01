@@ -1,10 +1,5 @@
 // src/shared/guards/roles.guard.ts
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '@/shared/decorators/roles.decorator';
 import { ExtendedUserSession } from '../interfaces/extended-session';
@@ -30,9 +25,7 @@ export class RolesGuard implements CanActivate {
 
     const hasRole = requiredRoles.includes(session.user.role);
     if (!hasRole) {
-      throw new ForbiddenException(
-        'Access denied for user role'
-      );
+      throw new ForbiddenException('Access denied for user role');
     }
 
     return true;

@@ -4,11 +4,9 @@ import { Language } from './entities/languages.entity';
 
 @Injectable()
 export class ParametersService {
-    constructor(
-        private readonly languagesRepository: LanguagesRepository,
-    ) {}
+  constructor(private readonly languagesRepository: LanguagesRepository) {}
 
-    async findAllLanguages(): Promise<Language[]> {
-        return this.languagesRepository.findAll();
-    }
+  async findAllLanguages(): Promise<Language[]> {
+    return this.languagesRepository.findAll();
+  }
 }

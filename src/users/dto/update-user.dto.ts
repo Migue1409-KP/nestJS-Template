@@ -2,14 +2,16 @@ import { ApiProperty } from '@nestjs/swagger';
 import { z } from 'zod';
 import { gender_type } from '../entities/user-profiles.entity';
 
-export const UpdatePartialUserProfileSchema = z.object({
-  name: z.string().min(2).max(100).optional(),
-  lastname: z.string().min(2).max(100).optional(),
-  languageId: z.string().uuid().optional(),
-  phone: z.string().optional(),
-  birthDate: z.coerce.date().optional(),
-  gender: z.nativeEnum(gender_type).optional(),
-}).partial();
+export const UpdatePartialUserProfileSchema = z
+  .object({
+    name: z.string().min(2).max(100).optional(),
+    lastname: z.string().min(2).max(100).optional(),
+    languageId: z.string().uuid().optional(),
+    phone: z.string().optional(),
+    birthDate: z.coerce.date().optional(),
+    gender: z.nativeEnum(gender_type).optional(),
+  })
+  .partial();
 
 export type UpdateUserProfileDto = z.infer<typeof UpdatePartialUserProfileSchema>;
 

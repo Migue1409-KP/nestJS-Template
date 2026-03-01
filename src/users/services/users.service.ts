@@ -30,24 +30,27 @@ export class UsersService {
 
     if (data.languageId && !(await this.languageRepository.findOneById(data.languageId))) {
       throw new NotFoundException({
-        message: "Language not found",
+        message: 'Language not found',
         data: [
           {
-            field: "languageId",
-            message: "No language with given id",
-            code: "language_id_not_found",
+            field: 'languageId',
+            message: 'No language with given id',
+            code: 'language_id_not_found',
           },
         ],
       });
     }
 
-    const userProfileResponse = await this.userProfileRepository.createEntity(userProfileReq, queryRunner);
+    const userProfileResponse = await this.userProfileRepository.createEntity(
+      userProfileReq,
+      queryRunner,
+    );
 
     if (isInvokedFromController) {
       await this.userProfileRepository.updateUserNameByAuthUserId(
         data.authUserId,
         `${data.name} ${data.lastname}`.trim(),
-        queryRunner
+        queryRunner,
       );
     }
 
@@ -57,7 +60,7 @@ export class UsersService {
   async findByAuthUserId(authUserId: string): Promise<UserProfile & { provider: string }> {
     const user = await this.userProfileRepository.findOneByAuthUserId(authUserId);
     const provider = await this.userProfileRepository.getProviderLogin(authUserId);
-    return {...user, provider};
+    return { ...user, provider };
   }
 
   @Transactional()
@@ -69,12 +72,12 @@ export class UsersService {
     const existingProfile = await this.userProfileRepository.findOneById(id);
     if (!existingProfile) {
       throw new NotFoundException({
-        message: "User profile not found",
+        message: 'User profile not found',
         data: [
           {
-            field: "id",
-            message: "No user profile with given id",
-            code: "id_not_found",
+            field: 'id',
+            message: 'No user profile with given id',
+            code: 'id_not_found',
           },
         ],
       });
@@ -91,18 +94,21 @@ export class UsersService {
     const updatedProfile = await this.userProfileRepository.updateEntity(
       id,
       updateData,
-      queryRunner
+      queryRunner,
     );
 
     if (!updatedProfile) {
-      throw new NotFoundException({message: "Failed to update user profile"});
+      throw new NotFoundException({ message: 'Failed to update user profile' });
     }
 
-    if( updatedProfile.name !== existingProfile.name || updatedProfile.lastname !== existingProfile.lastname ){
+    if (
+      updatedProfile.name !== existingProfile.name ||
+      updatedProfile.lastname !== existingProfile.lastname
+    ) {
       await this.userProfileRepository.updateUserNameByAuthUserId(
         updatedProfile.authUserId,
         `${updatedProfile.name} ${updatedProfile.lastname}`.trim(),
-        queryRunner
+        queryRunner,
       );
     }
 
@@ -113,12 +119,12 @@ export class UsersService {
     const profile = await this.userProfileRepository.findOneById(id);
     if (!profile) {
       throw new NotFoundException({
-        message: "User profile not found",
+        message: 'User profile not found',
         data: [
           {
-            field: "id",
-            message: "No user profile with given id",
-            code: "id_not_found",
+            field: 'id',
+            message: 'No user profile with given id',
+            code: 'id_not_found',
           },
         ],
       });

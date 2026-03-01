@@ -30,9 +30,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         status,
         detail: typeof r === 'string' ? r : (r as any).message,
         instance: request.url,
-        ...(typeof r !== 'string' && ((r as any).data?.length > 0 || (r as any).errors?.length > 0) && {
-          errors: (r as any).data || (r as any).errors
-        })
+        ...(typeof r !== 'string' &&
+          ((r as any).data?.length > 0 || (r as any).errors?.length > 0) && {
+            errors: (r as any).data || (r as any).errors,
+          }),
       };
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -52,9 +53,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         exception instanceof Error ? exception.stack : 'Unknown error',
       );
     } else {
-      this.logger.warn(
-        `${request.method} ${request.url} - ${status} - ${problem.detail}`,
-      );
+      this.logger.warn(`${request.method} ${request.url} - ${status} - ${problem.detail}`);
     }
 
     const errorResponse: ApiError = {

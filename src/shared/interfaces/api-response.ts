@@ -9,7 +9,9 @@ export interface TopLevelLinks {
   related?: Link;
 }
 
-export interface BaseMeta { [k: string]: unknown; }
+export interface BaseMeta {
+  [k: string]: unknown;
+}
 
 // Paginación OFFSET
 export interface OffsetPaginationMeta extends BaseMeta {
@@ -40,11 +42,11 @@ export interface CursorPaginationLinks extends TopLevelLinks {}
  */
 export interface ProblemDetails {
   /** URI que identifica el tipo de problema; por defecto "about:blank". */
-  type?: string;     // URI reference
+  type?: string; // URI reference
   /** Resumen corto del tipo de problema (estable por tipo). */
   title?: string;
   /** Código HTTP usado por el servidor para esta ocurrencia. */
-  status?: number;   // 100..599
+  status?: number; // 100..599
   /** Explicación específica de esta ocurrencia (orientada a corregir). */
   detail?: string;
   /** URI de la ocurrencia específica (puede ser no dereferenciable). */
@@ -70,7 +72,11 @@ export type ValidationProblem = ProblemDetails & {
 /** -------------------------------
  *  Envelopes
  *  ------------------------------- */
-export interface ApiSuccess<T, M extends BaseMeta = BaseMeta, L extends TopLevelLinks = TopLevelLinks> {
+export interface ApiSuccess<
+  T,
+  M extends BaseMeta = BaseMeta,
+  L extends TopLevelLinks = TopLevelLinks,
+> {
   status: 'success';
   data: T;
   meta?: M;
@@ -94,20 +100,21 @@ export interface ApiError {
 }
 
 /** Unión estándar */
-export type ApiResponse<T, M extends BaseMeta = BaseMeta, L extends TopLevelLinks = TopLevelLinks> =
-  | ApiSuccess<T, M, L>
-  | ApiFail
-  | ApiError;
+export type ApiResponse<
+  T,
+  M extends BaseMeta = BaseMeta,
+  L extends TopLevelLinks = TopLevelLinks,
+> = ApiSuccess<T, M, L> | ApiFail | ApiError;
 
 /** Helpers */
 export const isSuccess = <T, M extends BaseMeta, L extends TopLevelLinks>(
-  r: ApiResponse<T, M, L>
+  r: ApiResponse<T, M, L>,
 ): r is ApiSuccess<T, M, L> => r.status === 'success';
 
 export const isFail = <T, M extends BaseMeta, L extends TopLevelLinks>(
-  r: ApiResponse<T, M, L>
+  r: ApiResponse<T, M, L>,
 ): r is ApiFail => r.status === 'fail';
 
 export const isError = <T, M extends BaseMeta, L extends TopLevelLinks>(
-  r: ApiResponse<T, M, L>
+  r: ApiResponse<T, M, L>,
 ): r is ApiError => r.status === 'error';

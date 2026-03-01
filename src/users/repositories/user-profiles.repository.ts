@@ -23,7 +23,10 @@ export class UserRepository extends Repository<UserProfile> {
     });
   }
 
-  async findOneByAuthUserId(auth_user_id: string, queryRunner?: QueryRunner): Promise<UserProfile | null> {
+  async findOneByAuthUserId(
+    auth_user_id: string,
+    queryRunner?: QueryRunner,
+  ): Promise<UserProfile | null> {
     return this.getRepository(queryRunner).findOne({
       where: { authUserId: auth_user_id },
       relations: ['country', 'language'],
@@ -36,7 +39,11 @@ export class UserRepository extends Repository<UserProfile> {
     return repo.save(userProfile);
   }
 
-  async updateEntity(id: string, data: Partial<UserProfile>, queryRunner?: QueryRunner): Promise<UserProfile | null> {
+  async updateEntity(
+    id: string,
+    data: Partial<UserProfile>,
+    queryRunner?: QueryRunner,
+  ): Promise<UserProfile | null> {
     await this.getRepository(queryRunner).update(id, data);
     return this.findOneById(id, queryRunner);
   }
@@ -51,7 +58,11 @@ export class UserRepository extends Repository<UserProfile> {
     return result.affected !== null && result.affected > 0;
   }
 
-  async updateUserNameByAuthUserId(authUserId: string, name: string, queryRunner?: QueryRunner): Promise<boolean> {
+  async updateUserNameByAuthUserId(
+    authUserId: string,
+    name: string,
+    queryRunner?: QueryRunner,
+  ): Promise<boolean> {
     const connection = queryRunner ? queryRunner.connection : this.dataSource;
     const result = await connection.query(
       `
@@ -59,8 +70,8 @@ export class UserRepository extends Repository<UserProfile> {
         SET "name"=$1
         WHERE id=$2;
       `,
-      [name, authUserId]
-    )
+      [name, authUserId],
+    );
 
     return result.rowCount > 0;
   }
@@ -76,8 +87,8 @@ export class UserRepository extends Repository<UserProfile> {
         WHERE u.id = $1
         LIMIT 1;
       `,
-      [authUserId]
-    )
+      [authUserId],
+    );
 
     return result && result.length > 0 ? result[0].providerId : 'local';
   }

@@ -3,8 +3,16 @@ import { Controller, Post, Body, UseGuards, HttpCode, Patch, Param, Get } from '
 import { AuthGuard, Session } from '@thallesp/nestjs-better-auth';
 import { UsersService } from '../services/users.service';
 import { ZodValidationPipe } from '@/shared/pipes/zod-validation.pipe';
-import { CreateUserProfileDto, CreateUserProfileSchema, CreateUserProfileSwaggerDto } from '../dto/create-user.dto';
-import { UpdateUserProfileDto, UpdatePartialUserProfileSchema, UpdatePartialUserProfileSwaggerDto } from '../dto/update-user.dto';
+import {
+  CreateUserProfileDto,
+  CreateUserProfileSchema,
+  CreateUserProfileSwaggerDto,
+} from '../dto/create-user.dto';
+import {
+  UpdateUserProfileDto,
+  UpdatePartialUserProfileSchema,
+  UpdatePartialUserProfileSwaggerDto,
+} from '../dto/update-user.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiSecurity, ApiParam } from '@nestjs/swagger';
 import { ApiSuccess } from '@/shared/interfaces/api-response';
 import { UserProfile } from '../entities/user-profiles.entity';
@@ -21,7 +29,8 @@ export class UsersController {
   @HttpCode(201)
   @ApiOperation({
     summary: 'Create user profile',
-    description: 'Creates a user profile for the authenticated user. User must have a valid session. Can only create one profile per user.',
+    description:
+      'Creates a user profile for the authenticated user. User must have a valid session. Can only create one profile per user.',
   })
   @ApiBody({ type: CreateUserProfileSwaggerDto })
   @ApiResponse({
@@ -63,14 +72,14 @@ export class UsersController {
   })
   async createProfile(
     @Session() session: ExtendedUserSession,
-    @Body(new ZodValidationPipe(CreateUserProfileSchema)) body: CreateUserProfileDto
+    @Body(new ZodValidationPipe(CreateUserProfileSchema)) body: CreateUserProfileDto,
   ): Promise<ApiSuccess<CreateUserProfileDto>> {
     const authUserId = session.user.id;
     return {
-      status: "success",
+      status: 'success',
       data: await this.usersService.createProfile(
         { authUserId, email: session.user.email, ...body },
-        true
+        true,
       ),
     };
   }
@@ -78,7 +87,8 @@ export class UsersController {
   @Patch('profile/:id')
   @ApiOperation({
     summary: 'Update user profile',
-    description: 'Partially updates an existing user profile. Can update any combination of fields. All fields are optional.',
+    description:
+      'Partially updates an existing user profile. Can update any combination of fields. All fields are optional.',
   })
   @ApiParam({
     name: 'id',
@@ -121,10 +131,10 @@ export class UsersController {
   })
   async updateProfile(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(UpdatePartialUserProfileSchema)) body: UpdateUserProfileDto
+    @Body(new ZodValidationPipe(UpdatePartialUserProfileSchema)) body: UpdateUserProfileDto,
   ): Promise<ApiSuccess<UserProfile>> {
     return {
-      status: "success",
+      status: 'success',
       data: await this.usersService.updateProfile(id, body),
     };
   }
@@ -132,7 +142,8 @@ export class UsersController {
   @Get('profile/me')
   @ApiOperation({
     summary: 'Get current user profile',
-    description: 'Retrieves the profile of the authenticated user based on their session. Returns null if user has not created a profile yet.',
+    description:
+      'Retrieves the profile of the authenticated user based on their session. Returns null if user has not created a profile yet.',
   })
   @ApiResponse({
     status: 200,
@@ -166,10 +177,12 @@ export class UsersController {
     status: 500,
     description: 'Internal server error',
   })
-  async getProfile(@Session() session: ExtendedUserSession): Promise<ApiSuccess<{ userProfile: UserProfile | null }>> {
+  async getProfile(
+    @Session() session: ExtendedUserSession,
+  ): Promise<ApiSuccess<{ userProfile: UserProfile | null }>> {
     const userProfile = await this.usersService.findByAuthUserId(session.user.id);
     return {
-      status: "success",
+      status: 'success',
       data: { userProfile },
     };
   }
@@ -177,7 +190,8 @@ export class UsersController {
   @Get('profile/:id')
   @ApiOperation({
     summary: 'Get user profile by ID',
-    description: 'Retrieves a specific user profile by its UUID. Returns all profile information including personal data and preferences.',
+    description:
+      'Retrieves a specific user profile by its UUID. Returns all profile information including personal data and preferences.',
   })
   @ApiParam({
     name: 'id',
@@ -221,7 +235,7 @@ export class UsersController {
   })
   async getProfileById(@Param('id') id: string): Promise<ApiSuccess<any>> {
     return {
-      status: "success",
+      status: 'success',
       data: await this.usersService.findProfileById(id),
     };
   }

@@ -7,18 +7,7 @@ import { ParametersModule } from './parameters/parameters.module';
 
 @Global()
 @Module({
-  imports: [
-    ConfigModule,
-    DatabaseModule,
-    NotificationModule,
-    HttpModule,
-    ParametersModule,
-  ],
-  exports: [
-    DatabaseModule,
-    NotificationModule,
-    HttpModule,
-    ParametersModule,
-  ],
+  imports: [ConfigModule, DatabaseModule, NotificationModule, HttpModule, ParametersModule],
+  exports: [DatabaseModule, NotificationModule, HttpModule, ParametersModule],
 })
 export class CoreModule {}

@@ -1,22 +1,22 @@
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
-import * as dotenv from "dotenv";
-import { emailOTP, lastLoginMethod, magicLink, openAPI } from "better-auth/plugins";
-import { passkey } from "better-auth/plugins/passkey";
+import { betterAuth } from 'better-auth';
+import { Pool } from 'pg';
+import * as dotenv from 'dotenv';
+import { emailOTP, lastLoginMethod, magicLink, openAPI } from 'better-auth/plugins';
+import { passkey } from 'better-auth/plugins/passkey';
 
 // Cargar variables de entorno manualmente
 dotenv.config();
 const frontendUrl = process.env.FRONTEND_URL;
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === 'production';
 
 const trustedOrigins = isProduction
   ? [frontendUrl]
-  : frontendUrl.split(",").map(url => url.trim());
+  : frontendUrl.split(',').map((url) => url.trim());
 
 export const auth = betterAuth({
-  url: `${process.env.HOST}:${process.env.PORT}` || "http://localhost:3000",
-  basePath: `${process.env.API_PREFIX}/better-auth` || "/api/v1/better-auth",
-  secret: process.env.BETTER_AUTH_SECRET || "supersecret",
+  url: `${process.env.HOST}:${process.env.PORT}` || 'http://localhost:3000',
+  basePath: `${process.env.API_PREFIX}/better-auth` || '/api/v1/better-auth',
+  secret: process.env.BETTER_AUTH_SECRET || 'supersecret',
 
   database: new Pool({
     connectionString: process.env.DATABASE_URL!,
@@ -30,40 +30,37 @@ export const auth = betterAuth({
   },
 
   user: {
-    modelName: "users",
+    modelName: 'users',
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async (
-        { user, newEmail, url, token },
-        request
-      ) => {},
+      sendChangeEmailVerification: async ({ user, newEmail, url, token }, request) => {},
     },
   },
 
   account: {
-    modelName: "accounts",
+    modelName: 'accounts',
   },
 
   session: {
-    modelName: "sessions",
+    modelName: 'sessions',
   },
 
   verification: {
-    modelName: "verifications",
+    modelName: 'verifications',
   },
 
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      prompt: "select_account consent",
-      accessType: "offline",
+      prompt: 'select_account consent',
+      accessType: 'offline',
       scope: [
-        "https://www.googleapis.com/auth/user.gender.read",
-        "https://www.googleapis.com/auth/user.birthday.read",
-        "https://www.googleapis.com/auth/user.addresses.read",
-        "https://www.googleapis.com/auth/profile.language.read"
-      ]
+        'https://www.googleapis.com/auth/user.gender.read',
+        'https://www.googleapis.com/auth/user.birthday.read',
+        'https://www.googleapis.com/auth/user.addresses.read',
+        'https://www.googleapis.com/auth/profile.language.read',
+      ],
     },
   },
 
@@ -76,9 +73,9 @@ export const auth = betterAuth({
     }),
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
-        if (type === "sign-in") {
+        if (type === 'sign-in') {
           // Send the OTP for sign in
-        } else if (type === "email-verification") {
+        } else if (type === 'email-verification') {
           // Send the OTP for email verification
         } else {
           // Send the OTP for password reset

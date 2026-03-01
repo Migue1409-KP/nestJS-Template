@@ -22,7 +22,7 @@ export function Transactional() {
       if (!dataSource) {
         throw new Error(
           `@Transactional() requires 'dataSource' to be injected in the service. ` +
-          `Make sure your service has: constructor(private readonly dataSource: DataSource) {...}`,
+            `Make sure your service has: constructor(private readonly dataSource: DataSource) {...}`,
         );
       }
 
@@ -69,7 +69,7 @@ export function TransactionalWithContext() {
       if (!dataSource) {
         throw new Error(
           `@TransactionalWithContext() requires 'dataSource' to be injected in the service. ` +
-          `Make sure your service has: constructor(private readonly dataSource: DataSource) {...}`,
+            `Make sure your service has: constructor(private readonly dataSource: DataSource) {...}`,
         );
       }
 

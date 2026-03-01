@@ -1,5 +1,3 @@
-
-
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -8,35 +6,35 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-} from "typeorm";
-import { NotificationTemplate } from "./notification-templates.entity";
-import { Language } from "@/core/parameters/entities/languages.entity";
+} from 'typeorm';
+import { NotificationTemplate } from './notification-templates.entity';
+import { Language } from '@/core/parameters/entities/languages.entity';
 
-@Entity("notification_template_translations")
+@Entity('notification_template_translations')
 export class NotificationTemplateTranslation {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => NotificationTemplate, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "template" })
+  @ManyToOne(() => NotificationTemplate, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'template' })
   template: NotificationTemplate;
 
-  @ManyToOne(() => Language, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "language" })
+  @ManyToOne(() => Language, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'language' })
   language: Language;
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: 'varchar', length: 255 })
   subject: string;
 
-  @Column({ name: "html_template", type: "text", nullable: true })
+  @Column({ name: 'html_template', type: 'text', nullable: true })
   htmlTemplate: string;
 
-  @Column({ name: "sms_template", type: "text", nullable: true })
+  @Column({ name: 'sms_template', type: 'text', nullable: true })
   smsTemplate: string;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
