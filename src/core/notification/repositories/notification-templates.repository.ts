@@ -1,51 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository, QueryRunner } from 'typeorm';
 import { NotificationTemplate } from '../entities/notification-templates.entity';
 
 @Injectable()
-export class NotificationTemplatesRepository {
-  constructor(
-    @InjectRepository(NotificationTemplate)
-    private readonly repository: Repository<NotificationTemplate>,
-  ) {}
-
-  async create(data: Partial<NotificationTemplate>): Promise<NotificationTemplate> {
-    const template = this.repository.create(data);
-    return await this.repository.save(template);
+export class NotificationTemplatesRepository extends Repository<NotificationTemplate> {
+  constructor(private dataSource: DataSource) {
+    super(NotificationTemplate, dataSource.createEntityManager());
   }
 
-  async findAll(): Promise<NotificationTemplate[]> {
-    return await this.repository.find();
+  private getRepository(queryRunner?: QueryRunner): Repository<NotificationTemplate> {
+    return queryRunner ? queryRunner.manager.getRepository(NotificationTemplate) : this;
   }
 
-  async findById(id: string): Promise<NotificationTemplate | null> {
-    return await this.repository.findOne({ where: { id } });
+  async createEntity(
+    data: Partial<NotificationTemplate>,
+    queryRunner?: QueryRunner,
+  ): Promise<NotificationTemplate> {
+    const repo = this.getRepository(queryRunner);
+    const template = repo.create(data);
+    return await repo.save(template);
   }
 
-  async findByCode(code: string): Promise<NotificationTemplate | null> {
-    return await this.repository.findOne({ where: { code }, relations: ['translations'] });
+  async findAll(queryRunner?: QueryRunner): Promise<NotificationTemplate[]> {
+    return await this.getRepository(queryRunner).find();
   }
 
-  async findActive(): Promise<NotificationTemplate[]> {
-    return await this.repository.find({ where: { isActive: true } });
+  async findById(id: string, queryRunner?: QueryRunner): Promise<NotificationTemplate | null> {
+    return await this.getRepository(queryRunner).findOne({ where: { id } });
   }
 
-  async update(
+  async findByCode(code: string, queryRunner?: QueryRunner): Promise<NotificationTemplate | null> {
+    return await this.getRepository(queryRunner).findOne({
+      where: { code },
+      relations: ['translations'],
+    });
+  }
+
+  async findActive(queryRunner?: QueryRunner): Promise<NotificationTemplate[]> {
+    return await this.getRepository(queryRunner).find({ where: { isActive: true } });
+  }
+
+  async updateEntity(
     id: string,
     data: Partial<NotificationTemplate>,
+    queryRunner?: QueryRunner,
   ): Promise<NotificationTemplate | null> {
-    await this.repository.update(id, data);
-    return await this.findById(id);
+    await this.getRepository(queryRunner).update(id, data);
+    return await this.findById(id, queryRunner);
   }
 
-  async delete(id: string): Promise<boolean> {
-    const result = await this.repository.delete(id);
+  async deleteEntity(id: string, queryRunner?: QueryRunner): Promise<boolean> {
+    const result = await this.getRepository(queryRunner).delete(id);
     return result.affected > 0;
   }
 
-  async softDelete(id: string): Promise<boolean> {
-    const result = await this.repository.update(id, { isActive: false });
+  async softDeleteTemplate(id: string, queryRunner?: QueryRunner): Promise<boolean> {
+    const result = await this.getRepository(queryRunner).update(id, { isActive: false });
     return result.affected > 0;
   }
 }

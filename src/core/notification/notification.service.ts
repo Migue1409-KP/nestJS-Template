@@ -141,19 +141,19 @@ export class NotificationService {
     }
 
     // Enviar SMS si corresponde (por ahora deshabilitado)
-    if (phone && sms) {
-      const status = await this.sendSms(phone, sms)
-        .then(() => NotificationStatus.SENT)
-        .catch(() => NotificationStatus.FAILED);
+    // if (phone && sms) {
+    //   const status = await this.sendSms(phone, sms)
+    //     .then(() => NotificationStatus.SENT)
+    //     .catch(() => NotificationStatus.FAILED);
 
-      await this.notificationsRepository.updateStatus(notificationRecord.id, status);
+    //   await this.notificationsRepository.updateStatus(notificationRecord.id, status);
 
-      if (status === NotificationStatus.FAILED) {
-        throw new InternalServerErrorException({
-          message: `Failed to send SMS to ${phone}`,
-        });
-      }
-    }
+    //   if (status === NotificationStatus.FAILED) {
+    //     throw new InternalServerErrorException({
+    //       message: `Failed to send SMS to ${phone}`,
+    //     });
+    //   }
+    // }
 
     return { success: true };
   }
