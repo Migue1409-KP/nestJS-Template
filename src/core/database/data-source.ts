@@ -1,7 +1,9 @@
 import { DataSource } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
+import * as dotenv from 'dotenv';
 
-const configService = new ConfigService();
+dotenv.config();
+
+const isProd = process.env.NODE_ENV === 'production';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -13,4 +15,5 @@ export const AppDataSource = new DataSource({
   entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
   migrations: ['src/core/database/migrations/*{.ts,.js}'],
   synchronize: false,
+  ssl: isProd ? { rejectUnauthorized: false } : false,
 });
