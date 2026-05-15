@@ -1,6 +1,6 @@
 // users.controller.ts
-import { Controller, Post, Body, UseGuards, HttpCode, Patch, Param, Get } from '@nestjs/common';
-import { AuthGuard, Session } from '@thallesp/nestjs-better-auth';
+import { Controller, Post, Body, HttpCode, Patch, Param, Get } from '@nestjs/common';
+import { Session } from '@thallesp/nestjs-better-auth';
 import { UsersService } from '../services/users.service';
 import { ZodValidationPipe } from '@/shared/pipes/zod-validation.pipe';
 import {
@@ -19,7 +19,6 @@ import { UserProfile } from '../entities/user-profiles.entity';
 import { ExtendedUserSession } from '@/shared/interfaces/extended-session';
 
 @Controller('users')
-@UseGuards(AuthGuard)
 @ApiSecurity('apiKeyAuth')
 @ApiSecurity('cookieAuth')
 export class UsersController {

@@ -23,5 +23,28 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [
+          {
+            name: '@thallesp/nestjs-better-auth',
+            importNames: ['AllowAnonymous', 'OptionalAuth'],
+            message:
+              'Use @/shared/decorators/allow-anonymous.decorator or optional-auth.decorator instead.',
+          },
+        ],
+      },
+    ],
   },
+  overrides: [
+    {
+      // Allow the wrapper files themselves to import from the library.
+      files: [
+        'src/shared/decorators/allow-anonymous.decorator.ts',
+        'src/shared/decorators/optional-auth.decorator.ts',
+      ],
+      rules: { 'no-restricted-imports': 'off' },
+    },
+  ],
 };

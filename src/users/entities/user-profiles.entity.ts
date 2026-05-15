@@ -29,8 +29,14 @@ export class UserProfile {
   @Column({ type: 'varchar', nullable: true, name: 'last_name' })
   lastname!: string;
 
-  @Column({ type: 'varchar', nullable: false, default: 'GRANTOR', comment: 'GRANTOR | STAFF' })
-  role!: string;
+  @Column({
+    type: 'text',
+    array: true,
+    nullable: false,
+    default: () => "'{USER}'",
+    comment: 'List of roles assigned to the user. Valid values: ADMIN | USER',
+  })
+  roles!: string[];
 
   @ManyToOne(() => Language, { nullable: true })
   @JoinColumn({ name: 'language' })

@@ -1,12 +1,10 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { ApiSuccess } from '@/shared/interfaces/api-response';
 import { ParametersService } from './parameters.service';
 import { Language } from './entities/languages.entity';
 
 @Controller('parameters')
-@UseGuards(AuthGuard)
 export class ParametersController {
   constructor(private readonly parametersService: ParametersService) {}
 
@@ -66,5 +64,10 @@ export class ParametersController {
       status: 'success',
       data: await this.parametersService.findAllLanguages(),
     };
+  }
+
+  @Get('test')
+  async test(): Promise<string> {
+    return 'test';
   }
 }

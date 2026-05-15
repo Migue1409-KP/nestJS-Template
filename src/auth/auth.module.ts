@@ -17,8 +17,11 @@ import { HttpModule } from '@/core/http/http.module';
     BetterAuthModule.forRootAsync({
       imports: [AuthConfigModule],
       inject: [AuthConfigFactory],
+      // disableGlobalAuthGuard: PolicyGuard handles auth+authz in a single pass,
+      // so we don't need the library's AuthGuard doubling up on getSession().
       useFactory: (factory: AuthConfigFactory) => ({
         auth: factory.create(),
+        disableGlobalAuthGuard: true,
       }),
     }),
   ],

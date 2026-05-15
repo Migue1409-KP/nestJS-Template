@@ -1,11 +1,8 @@
 import { UserSession as BaseUserSession } from '@thallesp/nestjs-better-auth';
+import { Role } from '@/shared/authorization/constants/roles.constant';
 
-/**
- * Extiende el UserSession base de BetterAuth para incluir el campo `role`.
- * Esto te da tipado completo y seguro para session.user.role
- */
 export interface ExtendedUserSession extends BaseUserSession {
   user: BaseUserSession['user'] & {
-    role: string;
+    roles: Role[];
   };
 }

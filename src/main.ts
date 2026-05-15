@@ -9,7 +9,6 @@ import { ProblemDetailsFilter } from './shared/filters/problem-details.filter';
 import { RequestIdInterceptor } from './shared/interceptors/request-id.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApiKeyGuard } from './shared/guards/api-key.guard';
-import { RolesGuard } from './shared/guards/roles.guard';
 // import * as fs from 'fs';
 // import * as yaml from 'js-yaml';
 
@@ -32,7 +31,7 @@ async function bootstrap() {
 
   const reflector = app.get(Reflector);
 
-  app.useGlobalGuards(new ApiKeyGuard(configService, reflector), new RolesGuard(reflector));
+  app.useGlobalGuards(new ApiKeyGuard(configService, reflector));
 
   // Global pipes
   app.useGlobalPipes(new ZodValidationPipe());

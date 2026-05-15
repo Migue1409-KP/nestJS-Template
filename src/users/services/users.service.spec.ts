@@ -13,7 +13,7 @@ const mockUserProfile: UserProfile = {
   authUserId: 'auth-user-uuid-1',
   name: 'John',
   lastname: 'Doe',
-  role: 'GRANTOR',
+  roles: ['USER'],
   language: null,
   phone: null,
   birthDate: null,

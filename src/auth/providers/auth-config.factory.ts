@@ -107,7 +107,7 @@ export class AuthConfigFactory {
           return {
             user: {
               ...user,
-              role: profile?.role || 'USER',
+              roles: profile?.roles?.length ? profile.roles : ['USER'],
             },
             session,
           };

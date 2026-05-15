@@ -19,7 +19,7 @@ export class UserRepository extends Repository<UserProfile> {
   async findOneById(id: string, queryRunner?: QueryRunner): Promise<UserProfile | null> {
     return this.getRepository(queryRunner).findOne({
       where: { id },
-      relations: ['country', 'language'],
+      relations: ['language'],
     });
   }
 
@@ -29,7 +29,7 @@ export class UserRepository extends Repository<UserProfile> {
   ): Promise<UserProfile | null> {
     return this.getRepository(queryRunner).findOne({
       where: { authUserId: auth_user_id },
-      relations: ['country', 'language'],
+      relations: ['language'],
     });
   }
 

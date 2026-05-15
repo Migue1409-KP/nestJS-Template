@@ -1,0 +1,13 @@
+roles:
+  ADMIN:
+    - resource: '*'
+      methods: ['*']
+  USER:
+    - resource: 'users/profile'
+      methods: ['POST']
+    - resource: 'users/profile/me'
+      methods: ['GET']
+    - resource: 'users/profile/:id'
+      methods: ['GET', 'PATCH']
+    - resource: 'parameters/languages'
+      methods: ['GET']
