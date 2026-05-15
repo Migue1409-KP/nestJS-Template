@@ -137,3 +137,6 @@ build/
 
 #Migrations
 better-auth_migrations/
+
+# Claude
+.claude/*.local.json
