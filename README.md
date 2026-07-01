@@ -15,6 +15,7 @@ Template base para proyectos en **NestJS**, diseñado para escalar como un **Mod
 | **Winston** | Logging estructurado con `requestId` por petición |
 | **Swagger (OpenAPI)** | Documentación automática de la API en `/api/v1/docs` |
 | **AWS SES** | Envío de emails a través del módulo de notificaciones |
+| **Cloudflare R2** | Almacenamiento de archivos con presigned URLs (subida directa desde el frontend) |
 | **RFC 9457 (Problem Details)** | Formato estándar de errores en toda la API |
 | **Docker** | Entorno de desarrollo local integrado |
 
@@ -27,7 +28,7 @@ src/
  app.module.ts        # Módulo raíz
  main.ts              # Bootstrap, Swagger, Guards, Pipes e Interceptores globales
  auth/                # Autenticación con BetterAuth + endpoints custom
- core/                # Infraestructura: DB, Logger, HTTP Client, Notificaciones, Parámetros
+ core/                # Infraestructura: DB, Logger, HTTP Client, Notificaciones, Parámetros, Storage
  shared/              # Código transversal: decoradores, filtros, guards, interceptores, pipes
  users/               # Dominio de usuarios: perfiles, repositorios, servicios
 doc/                     # Documentación detallada del template
@@ -70,10 +71,18 @@ DB_SYNCHRONIZE=false
 BETTER_AUTH_SECRET=your-secret-here
 BETTER_AUTH_URL=http://localhost:3000/api/v1
 
-# AWS SES (opcional)
+# AWS SES (opcional — para notificaciones por email)
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
+
+# Cloudflare R2 (opcional — para subida de archivos)
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=https://assets.yourdomain.com
+R2_PRESIGN_EXPIRES_IN=300
 ```
 
 ### 3. Levantar la base de datos (Docker)
