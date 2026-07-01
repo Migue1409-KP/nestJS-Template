@@ -6,11 +6,13 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import { NotificationTemplate } from './notification-templates.entity';
 import { Language } from '@/core/parameters/entities/languages.entity';
 
 @Entity('notification_template_translations')
+@Unique('UQ_notification_template_translations_template_language', ['template', 'language'])
 export class NotificationTemplateTranslation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
